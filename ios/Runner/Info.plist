@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>VerdeVivo IA</string> <!-- Pode ser o nome do seu app -->
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>verdevivo_ia_prototype</string> <!-- Nome do seu projeto Flutter -->
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+
+    <!-- ADIÇÕES PARA IMAGE_PICKER ABAIXO -->
+    <key>NSCameraUsageDescription</key>
+    <string>Este aplicativo precisa de acesso à sua câmera para permitir que você tire fotos de plantas para identificação, diagnóstico ou para adicionar aos seus posts na comunidade.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Este aplicativo precisa de acesso à sua galeria de fotos para permitir que você selecione imagens de plantas para identificação, diagnóstico ou para adicionar aos seus posts na comunidade.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Este aplicativo pode solicitar acesso ao microfone se você optar por gravar vídeos (funcionalidade não ativa, mas o seletor de imagem pode oferecer a opção).</string>
+    <!-- FIM DAS ADIÇÕES PARA IMAGE_PICKER -->
+
+</dict>
+</plist>
