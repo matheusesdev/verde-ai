@@ -1,10 +1,11 @@
 // lib/screens/main_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart'; // Para CupertinoIcons se você os usar na BottomNav
 import 'dashboard_screen.dart';
 import 'my_garden_screen.dart';
 import 'identify_diagnose_screen.dart';
 import 'community_screen.dart';
-import '../models/plant_model.dart';
+import '../models/plant_model.dart'; // Necessário para a lista _myPlantsList e callbacks
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,9 +16,10 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final List<Plant> _myPlantsList = [];
+  final List<Plant> _myPlantsList = []; // Lista centralizada de plantas do usuário
 
-  void changeTab(int index) {
+  // Função para mudar a aba programaticamente, passada para o DashboardScreen
+  void _changeTab(int index) {
     if (index >= 0 && index < _widgetOptions.length) {
       setState(() {
         _selectedIndex = index;
@@ -25,37 +27,47 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  void addPlantToGardenAndNavigate(Plant plant, BuildContext passedContext) {
+  // Callback para adicionar planta (vindo de IdentifyDiagnoseScreen) e navegar para detalhes
+  void _addPlantToGardenAndNavigate(Plant plant, BuildContext passedContext) {
     bool plantExists = _myPlantsList.any((p) => p.id == plant.id);
 
     if (!plantExists) {
       setState(() {
         _myPlantsList.add(plant);
       });
-      ScaffoldMessenger.of(passedContext).showSnackBar(
-        SnackBar(content: Text('${plant.name} adicionada ao seu jardim!')),
-      );
+      if (mounted && passedContext.mounted) { // Verificar se os contextos ainda são válidos
+        ScaffoldMessenger.of(passedContext).showSnackBar(
+          SnackBar(content: Text('${plant.name} adicionada ao seu jardim!')),
+        );
+      }
     } else {
-       ScaffoldMessenger.of(passedContext).showSnackBar(
-        SnackBar(content: Text('${plant.name} já está no seu jardim!')),
-      );
+      if (mounted && passedContext.mounted) {
+        ScaffoldMessenger.of(passedContext).showSnackBar(
+          SnackBar(content: Text('${plant.name} já está no seu jardim!')),
+        );
+      }
     }
     // Navegar para detalhes mesmo que a planta já exista, para visualização
+    // Passar o contexto que pode realizar a navegação (geralmente o da tela que chamou)
     Navigator.pushNamed(
-      passedContext, // Usar o contexto correto
+      passedContext,
       '/plant_details',
-      arguments: { // Passar como um Map
-        'plant': plant, // O objeto Plant
-        'updateCallback': updatePlantInGarden, // A função de callback
+      arguments: {
+        'plant': plant,
+        'updateCallback': _updatePlantInGarden, // Passar a função de update
       }
     );
   }
 
-  void updatePlantInGarden(Plant updatedPlant) {
+  // Callback para atualizar uma planta na lista (vindo de PlantDetailsScreen)
+  void _updatePlantInGarden(Plant updatedPlant) {
     setState(() {
       final index = _myPlantsList.indexWhere((p) => p.id == updatedPlant.id);
       if (index != -1) {
         _myPlantsList[index] = updatedPlant;
+      } else {
+        // Opcional: Adicionar se não encontrar (embora update sugira que já existe)
+        // _myPlantsList.add(updatedPlant);
       }
     });
   }
@@ -66,18 +78,18 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
      _widgetOptions = <Widget>[
-      DashboardScreen(myPlants: _myPlantsList, onNavigateToTab: changeTab),
+      DashboardScreen(myPlants: _myPlantsList, onNavigateToTab: _changeTab), // Passa a função _changeTab
       MyGardenScreen(
         myPlants: _myPlantsList,
-        addPlantCallback: addPlantToGardenAndNavigate,
-        updatePlantCallback: updatePlantInGarden,
+        addPlantCallback: _addPlantToGardenAndNavigate, // Este callback não é mais usado diretamente por MyGardenScreen
+        updatePlantCallback: _updatePlantInGarden,
       ),
-      IdentifyDiagnoseScreen(addPlantCallback: addPlantToGardenAndNavigate),
-      const CommunityScreen(),
+      IdentifyDiagnoseScreen(addPlantCallback: _addPlantToGardenAndNavigate), // Passa o callback correto
+      const CommunityScreen(), // CommunityScreen pode ser const se não precisar de parâmetros do MainScreen
     ];
   }
 
-
+  // Função chamada quando um item da BottomNavigationBar é tocado
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -87,35 +99,40 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      body: IndexedStack( // Usar IndexedStack para preservar o estado das abas
+        index: _selectedIndex,
+        children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
+            icon: Icon(CupertinoIcons.house), // Exemplo de ícone Cupertino
+            activeIcon: Icon(CupertinoIcons.house_fill),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_florist_outlined),
-            activeIcon: Icon(Icons.local_florist),
+            icon: Icon(CupertinoIcons.tree), // Exemplo
+            activeIcon: Icon(CupertinoIcons.leaf_arrow_circlepath), // Exemplo diferente para ativo
             label: 'Meu Jardim',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt_outlined),
-            activeIcon: Icon(Icons.camera_alt),
+            icon: Icon(CupertinoIcons.camera),
+            activeIcon: Icon(CupertinoIcons.camera_fill),
             label: 'Identificar',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people_outline),
-            activeIcon: Icon(Icons.people),
+            icon: Icon(CupertinoIcons.group),
+            activeIcon: Icon(CupertinoIcons.group_solid),
             label: 'Comunidade',
           ),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
+        // O tipo, cores, etc., já são definidos pelo BottomNavigationBarThemeData no tema global em main.dart
+        // Mas você pode sobrescrever aqui se necessário:
+        // type: BottomNavigationBarType.fixed,
+        // selectedItemColor: Theme.of(context).primaryColor,
+        // unselectedItemColor: Colors.grey,
       ),
     );
   }
