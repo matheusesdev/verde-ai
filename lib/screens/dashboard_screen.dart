@@ -1,159 +1,156 @@
+// lib/screens/dashboard_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../models/plant_model.dart';
-import 'article_details_screen.dart'; // IMPORTADO para a classe Article e navegação
+import 'article_details_screen.dart'; // Article class está aqui
 
 class DashboardScreen extends StatelessWidget {
   final List<Plant> myPlants;
-  final Function(int) onNavigateToTab;
+  final Function(int) onNavigateToTab; // Função para mudar de aba
 
   const DashboardScreen({
     super.key,
     required this.myPlants,
-    required this.onNavigateToTab,
+    required this.onNavigateToTab, // Certifique-se que este é passado de MainScreen
   });
 
-  // Mock de dados para os artigos
-  // CORRIGIDO: Caminhos dos assets para heroImagePath
+  // Mock de dados para os artigos (como na versão anterior)
   static final List<Article> _mockArticles = [
     Article(
       id: 'art1',
-      title: 'Guia Completo: Como Replantar sua Suculenta Favorita',
-      heroImagePath: 'assets/images/artigo_suculenta.png', // CAMINHO CORRETO
+      title: 'Guia Completo: Replantando sua Suculenta Favorita',
+      heroImageUrl: 'https://via.placeholder.com/300x200/A9DFBF/FFFFFF?Text=Suculenta+Replantio',
       author: 'Equipe VerdeVivo',
       publishedDate: DateTime(2023, 10, 20),
-      content:
-          'Replantar suculentas pode parecer intimidante, mas com os passos certos, é um processo simples que garante a saúde e o crescimento contínuo da sua planta.\n\n'
-          '**1. Escolha o Vaso Certo:**\nEle deve ser apenas um pouco maior que o vaso atual e ter furos de drenagem adequados. Suculentas não gostam de ficar com as raízes encharcadas!\n\n'
-          '**2. Prepare o Substrato:**\nUma mistura específica para cactos e suculentas é ideal, pois oferece a drenagem necessária. Você também pode fazer sua própria mistura com terra vegetal, areia grossa e perlita (proporção 1:1:1).\n\n'
-          '**3. Remova a Planta com Cuidado:**\nRetire a suculenta do vaso antigo, sacudindo o excesso de terra das raízes. Inspecione as raízes em busca de sinais de apodrecimento ou pragas. Se encontrar raízes escuras e moles, corte-as com uma tesoura esterilizada.\n\n'
-          '**4. Replantio:**\nColoque uma camada de substrato no novo vaso, posicione a suculenta no centro e preencha ao redor com mais substrato, firmando levemente. Deixe um pequeno espaço (cerca de 1-2cm) entre o substrato e a borda do vaso.\n\n'
-          '**5. Pós-Replantio (Importante!):**\nNão regue a suculenta imediatamente após o replantio! Espere cerca de uma semana para permitir que quaisquer raízes danificadas cicatrizem. Isso ajuda a prevenir o apodrecimento. Após esse período, regue moderadamente, esperando o solo secar completamente entre as regas.\n\n'
-          'Com esses cuidados, sua suculenta estará pronta para prosperar em seu novo lar. Lembre-se de observar sua planta e ajustar os cuidados conforme necessário. Feliz jardinagem!',
+      content: 'Replantar suculentas pode parecer intimidante...',
     ),
     Article(
       id: 'comPost1',
-      title: 'Comunidade em Ação: Minha Samambaia Está com Folhas Amarelas!',
-      heroImagePath: 'assets/images/post_roseiras.jpg', // CAMINHO CORRETO
-      author: 'Beto Samambaia (Comunidade)',
+      title: 'Comunidade: Minhas Folhas de Samambaia Estão Amarelando!',
+      heroImageUrl: 'https://via.placeholder.com/300x200/F5B7B1/FFFFFF?Text=Samambaia+Problema',
+      author: 'Beto Samambaia',
       publishedDate: DateTime(2023, 10, 28),
-      content: 'Pessoal da comunidade VerdeVivo, preciso de uma luz!\n\n'
-               'Minha samambaia (Nephrolepis exaltata) está apresentando folhas amareladas, principalmente as mais antigas, na base. Algumas pontas também estão ficando secas e marrons.\n\n'
-               '**Condições Atuais:**\n'
-               '- **Local:** Fica na minha sala, perto de uma janela que recebe luz indireta brilhante pela manhã. Não pega sol direto.\n'
-               '- **Rega:** Costumo regar quando sinto que o topo do substrato está começando a secar, geralmente umas 2 vezes por semana. Tento não encharcar.\n'
-               '- **Umidade:** Moro em uma região com umidade do ar relativamente boa, mas não borrifo as folhas.\n'
-               '- **Vaso:** Tem furos de drenagem.\n'
-               '- **Adubação:** Usei um adubo líquido para plantas verdes há uns 2 meses.\n\n'
-               'Será que estou errando na rega? Falta de umidade? Ou pode ser alguma deficiência nutricional? Qualquer ajuda é bem-vinda! Obrigado!\n\n'
-               '*(Este é um exemplo de como um post da comunidade poderia ser apresentado como um "artigo" ou ponto de discussão principal no dashboard. Clicar aqui poderia levar à aba comunidade, filtrando por este post ou abrindo-o diretamente).*',
+      content: 'Pessoal da comunidade VerdeVivo, preciso de uma luz!...',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     int plantsNeedingWater = myPlants.where((p) => p.name.contains("Samambaia")).length;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard VerdeVivo'),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: AppBar(title: const Text('Dashboard')),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
         children: <Widget>[
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Resumo do Jardim', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(Icons.eco_outlined, color: Colors.green, size: 20),
-                      const SizedBox(width: 8),
-                      Text('${myPlants.length} planta(s) em seu jardim.'),
-                    ],
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      const Icon(Icons.water_drop_outlined, color: Colors.blue, size: 20),
-                      const SizedBox(width: 8),
-                      Text('$plantsNeedingWater planta(s) precisam de rega (simulado).'),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  Align(
+          _buildSectionContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Resumo do Jardim', style: textTheme.titleLarge),
+                const SizedBox(height: 12),
+                _buildInfoRow(context, CupertinoIcons.tree, '${myPlants.length} planta(s) em seu jardim.'),
+                const SizedBox(height: 8),
+                _buildInfoRow(context, CupertinoIcons.drop, '$plantsNeedingWater planta(s) precisam de rega.'),
+                const SizedBox(height: 16),
+                Align(
                     alignment: Alignment.centerRight,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.visibility_outlined, size: 18),
-                      label: const Text('Ver Meu Jardim'),
-                      onPressed: () => onNavigateToTab(1),
-                    ),
-                  )
-                ],
-              ),
+                    child: CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(8.0),
+                        // CORRIGIDO: Chamar onNavigateToTab para ir para a aba "Meu Jardim" (índice 1)
+                        onPressed: () => onNavigateToTab(1),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Ver Jardim', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 15)),
+                            SizedBox(width: 6),
+                            Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 18),
+                          ],
+                        ),
+                      ),
+                )
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          Card(
+          _buildSectionContainer(
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              leading: const CircleAvatar(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                child: Icon(Icons.search_sharp),
+              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(CupertinoIcons.camera_viewfinder, color: Theme.of(context).primaryColor, size: 28),
               ),
-              title: const Text('Identificar Nova Planta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              subtitle: const Text('Descubra plantas com uma foto.'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
+              title: Text('Identificar Nova Planta', style: textTheme.titleMedium),
+              subtitle: Text('Descubra plantas com uma foto.', style: textTheme.bodySmall),
+              trailing: Icon(CupertinoIcons.right_chevron, color: Colors.grey[400], size: 20),
+              // CORRIGIDO: Chamar onNavigateToTab para ir para a aba "Identificar" (índice 2)
               onTap: () => onNavigateToTab(2),
             ),
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.only(left: 4.0, bottom: 10.0),
-            child: Text('Destaques & Dicas', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 8.0),
+            child: Text('Destaques & Dicas', style: textTheme.titleLarge),
           ),
-          if (_mockArticles.isNotEmpty)
-            _buildHighlightCard(
-              context,
-              article: _mockArticles[0],
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/article_details',
-                  arguments: _mockArticles[0],
-                );
-              },
-            ),
-          if (_mockArticles.length > 1)
-             _buildHighlightCard(
-              context,
-              article: _mockArticles[1],
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/article_details',
-                  arguments: _mockArticles[1],
-                );
-              },
-            ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _mockArticles.length,
+            itemBuilder: (context, index) {
+              final article = _mockArticles[index];
+              return _buildHighlightCard(
+                context: context,
+                article: article,
+                onTap: () {
+                  Navigator.pushNamed(context, '/article_details', arguments: article);
+                },
+              );
+            },
+            separatorBuilder: (context, index) => Divider(indent: 20, endIndent: 20, color: Theme.of(context).dividerTheme.color, height: 1),
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildHighlightCard(BuildContext context, {required Article article, required VoidCallback onTap}) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      clipBehavior: Clip.antiAlias,
+  Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Theme.of(context).iconTheme.color, size: 20),
+        const SizedBox(width: 10),
+        Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyMedium)),
+      ],
+    );
+  }
+
+  Widget _buildSectionContainer({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: Colors.grey[200]!, width: 0.8),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildHighlightCard({required BuildContext context, required Article article, required VoidCallback onTap}) {
+    final textTheme = Theme.of(context).textTheme;
+    return Material(
+      color: Colors.white,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -161,42 +158,40 @@ class DashboardScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.0),
                 child: Hero(
                   tag: 'article_image_${article.id}',
-                  child: Image.asset( // O Image.asset usa o heroImagePath
-                    article.heroImagePath, // Este deve ser 'assets/images/nome_arquivo.ext'
-                    width: 100,
-                    height: 100,
+                  child: Image.network( // Usando Image.network para heroImageUrl
+                    article.heroImageUrl,
+                    width: 80,
+                    height: 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
-                      width: 100,
-                      height: 100,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                      width: 80, height: 80,
+                      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8.0)),
+                      child: Icon(CupertinoIcons.photo, size: 30, color: Colors.grey[400]),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12.0),
+              const SizedBox(width: 16.0),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Text(
                       article.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0, height: 1.3),
+                      style: textTheme.titleMedium?.copyWith(height: 1.35, fontWeight: FontWeight.w500),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6.0),
+                    const SizedBox(height: 4.0),
                     Text(
-                      'Por: ${article.author}',
-                      style: TextStyle(fontSize: 12.0, color: Colors.grey[700]),
+                      'Por ${article.author}',
+                      style: textTheme.bodySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                      Text(
                       MaterialLocalizations.of(context).formatShortDate(article.publishedDate),
-                      style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+                      style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

@@ -1,68 +1,58 @@
+// lib/widgets/plant_card.dart
 import 'package:flutter/material.dart';
-import '../models/plant_model.dart';
+import 'package:flutter/cupertino.dart';
+import '../models/plant_model.dart'; // Modelo Plant já modificado
 
 class PlantCard extends StatelessWidget {
   final Plant plant;
   final VoidCallback onTap;
 
-  const PlantCard({
-    super.key,
-    required this.plant,
-    required this.onTap,
-  });
+  const PlantCard({ super.key, required this.plant, required this.onTap });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: InkWell( // Para efeito de toque
+    Widget imageWidget;
+    if (plant.imageUrl != null) {
+      imageWidget = Image.network(
+        plant.imageUrl!, width: 70, height: 70, fit: BoxFit.cover,
+        errorBuilder: (c,e,s) => const Icon(CupertinoIcons.leaf_arrow_circlepath, size: 70, color: Colors.grey),
+      );
+    } else if (plant.imagePath != null) {
+      imageWidget = Image.asset( // Assumindo que imagePath de dados mockados é sempre asset
+        plant.imagePath!, width: 70, height: 70, fit: BoxFit.cover,
+        errorBuilder: (c,e,s) => const Icon(CupertinoIcons.leaf_arrow_circlepath, size: 70, color: Colors.grey),
+      );
+    } else {
+      imageWidget = const Icon(CupertinoIcons.leaf_arrow_circlepath, size: 70, color: Colors.grey);
+    }
+
+    return Material(
+      color: Colors.white,
+      child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
           child: Row(
             children: [
-             // Dentro de lib/widgets/plant_card.dart
-// ...
-Hero(
-  tag: 'plant_image_${plant.id}',
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(8.0),
-    child: Image.asset( // <--- AQUI
-      plant.imagePath, // assume que plant.imagePath contém 'assets/images/nome_da_planta.ext'
-      width: 70,
-      height: 70,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) =>
-          const Icon(Icons.local_florist_outlined, size: 70, color: Colors.grey),
-    ),
-  ),
-),
-// ...
-              const SizedBox(width: 15),
+              Hero(
+                tag: 'plant_image_${plant.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: imageWidget,
+                ),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      plant.name,
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      plant.careInstructions.split('.')[0], // Primeira frase dos cuidados
-                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text(plant.name, style: Theme.of(context).textTheme.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Text(plant.careInstructions.split('.')[0], style: Theme.of(context).textTheme.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 18),
+              const Icon(CupertinoIcons.right_chevron, color: Colors.grey, size: 18),
             ],
           ),
         ),

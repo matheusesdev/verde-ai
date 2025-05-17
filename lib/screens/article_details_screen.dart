@@ -1,21 +1,19 @@
 // lib/screens/article_details_screen.dart
 import 'package:flutter/material.dart';
-// Se você for usar DateFormat para mais formatações complexas, adicione intl e descomente
-// import 'package:intl/intl.dart';
+import 'package:flutter/cupertino.dart';
 
-// Modelo simples para representar os dados do artigo
 class Article {
   final String id;
   final String title;
-  final String heroImagePath; // Imagem de destaque do artigo
-  final String content;       // Conteúdo principal do artigo
+  final String heroImageUrl; // Usando imageUrl para placeholders
+  final String content;
   final String author;
   final DateTime publishedDate;
 
-  const Article({ // Adicionado const ao construtor
+  const Article({
     required this.id,
     required this.title,
-    required this.heroImagePath,
+    required this.heroImageUrl,
     required this.content,
     required this.author,
     required this.publishedDate,
@@ -29,32 +27,38 @@ class ArticleDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final Brightness platformBrightness = MediaQuery.platformBrightnessOf(context);
+    // A cor do ícone da AppBar agora é controlada pelo AppBarTheme global
+    // final Color appBarIconColor = isDarkMode ? CupertinoColors.white : CupertinoColors.black;
+
+
     return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
-            expandedHeight: 250.0,
+            expandedHeight: 280.0,
             floating: false,
             pinned: true,
             stretch: true,
+            // backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Controlado pelo AppBarTheme
+            // elevation: 0, // Controlado pelo AppBarTheme
+            // iconTheme já definido no AppBarTheme
+            // O botão de voltar automático do Flutter usará o iconTheme da AppBarTheme
+            // Se quiser forçar um ícone Cupertino específico:
+            // leading: CupertinoButton(
+            //   padding: EdgeInsets.zero,
+            //   child: Icon(CupertinoIcons.back, color: Theme.of(context).appBarTheme.iconTheme?.color),
+            //   onPressed: () => Navigator.of(context).pop(),
+            // ),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
-              titlePadding: const EdgeInsetsDirectional.only(start: 48, bottom: 16, end: 48),
+              titlePadding: const EdgeInsetsDirectional.only(start: 56, bottom: 16, end: 56),
               title: Text(
                 article.title,
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.white,
-                  shadows: <Shadow>[
-                    Shadow(
-                      offset: Offset(0.0, 1.0),
-                      blurRadius: 3.0,
-                      color: Color.fromARGB(150, 0, 0, 0),
-                    ),
-                  ],
-                ),
+                style: Theme.of(context).appBarTheme.titleTextStyle, // Usar estilo do tema
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               background: Hero(
@@ -62,35 +66,29 @@ class ArticleDetailsScreen extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset(
-                      article.heroImagePath,
+                    Image.network( // Usando Image.network para imageUrl
+                      article.heroImageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
-                          Container(color: Colors.grey, child: const Icon(Icons.broken_image, size: 100, color: Colors.white70)),
+                          Container(color: Colors.grey[300], child: const Icon(CupertinoIcons.photo, size: 100, color: Colors.grey)),
                     ),
                     const DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          begin: Alignment.topCenter,
+                          begin: Alignment(0.0, 0.6),
                           end: Alignment.bottomCenter,
-                          colors: <Color>[
-                            Colors.transparent,
-                            Colors.black54,
-                          ],
-                          stops: [0.5, 1.0],
+                          colors: <Color>[ Colors.transparent, Colors.black87 ],
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              stretchModes: const [StretchMode.zoomBackground],
-              collapseMode: CollapseMode.parallax,
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.share),
-                tooltip: 'Compartilhar Artigo',
+              CupertinoButton( // Mantido CupertinoButton para consistência de estilo se desejado
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Icon(CupertinoIcons.share, color: Theme.of(context).appBarTheme.actionsIconTheme?.color),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Compartilhamento de artigo não implementado')),
@@ -99,48 +97,40 @@ class ArticleDetailsScreen extends StatelessWidget {
               ),
             ],
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 24.0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(
+                [
                   Text(
                     article.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.titleLarge?.color,
-                        ),
+                    style: textTheme.displayLarge?.copyWith(fontSize: 28, height: 1.3, letterSpacing: -0.2),
                   ),
                   const SizedBox(height: 12.0),
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 16.0, color: Colors.grey[700]),
-                      const SizedBox(width: 4.0),
+                      Icon(CupertinoIcons.person_alt_circle, size: 18.0, color: Theme.of(context).iconTheme.color),
+                      const SizedBox(width: 6.0),
                       Text(
                         article.author,
-                        style: TextStyle(fontSize: 14.0, color: Colors.grey[700], fontStyle: FontStyle.italic),
+                        style: textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
                       ),
                       const SizedBox(width: 16.0),
-                      Icon(Icons.calendar_today_outlined, size: 16.0, color: Colors.grey[700]),
-                      const SizedBox(width: 4.0),
+                      Icon(CupertinoIcons.calendar, size: 18.0, color: Theme.of(context).iconTheme.color),
+                      const SizedBox(width: 6.0),
                       Text(
                         MaterialLocalizations.of(context).formatMediumDate(article.publishedDate),
-                        style: TextStyle(fontSize: 14.0, color: Colors.grey[700]),
+                        style: textTheme.bodyMedium,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16.0),
-                  Divider(color: Colors.grey[300]),
-                  const SizedBox(height: 16.0),
+                  const SizedBox(height: 20.0),
+                  Divider(color: Theme.of(context).dividerTheme.color, height: 1, thickness: 0.5),
+                  const SizedBox(height: 20.0),
                   SelectableText(
-                    article.content,
-                    style: const TextStyle(
-                      fontSize: 16.0,
-                      height: 1.7,
-                      color: Color(0xFF424242),
-                    ),
-                    textAlign: TextAlign.justify,
+                    article.content.replaceAll('**', ''),
+                    style: textTheme.bodyLarge?.copyWith(height: 1.75, fontSize: 17),
+                    textAlign: TextAlign.left,
                   ),
                   const SizedBox(height: 30),
                 ],
