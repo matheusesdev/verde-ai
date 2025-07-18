@@ -1,16 +1,19 @@
 // lib/screens/dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+import '../providers/plant_provider.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/error_widget.dart';
 import '../models/plant_model.dart';
 import 'article_details_screen.dart'; // Article class está aqui
 
 class DashboardScreen extends StatelessWidget {
-  final List<Plant> myPlants;
   final Function(int) onNavigateToTab; // Função para mudar de aba
 
   const DashboardScreen({
     super.key,
-    required this.myPlants,
     required this.onNavigateToTab, // Certifique-se que este é passado de MainScreen
   });
 
@@ -36,86 +39,253 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int plantsNeedingWater = myPlants.where((p) => p.name.contains("Samambaia")).length;
-    final textTheme = Theme.of(context).textTheme;
+    return Consumer2<AppProvider, PlantProvider>(
+      builder: (context, appProvider, plantProvider, child) {
+        final textTheme = Theme.of(context).textTheme;
+        final stats = plantProvider.getStatistics();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
-        children: <Widget>[
-          _buildSectionContainer(
-            child: Column(
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Resumo do Jardim', style: textTheme.titleLarge),
-                const SizedBox(height: 12),
-                _buildInfoRow(context, CupertinoIcons.tree, '${myPlants.length} planta(s) em seu jardim.'),
-                const SizedBox(height: 8),
-                _buildInfoRow(context, CupertinoIcons.drop, '$plantsNeedingWater planta(s) precisam de rega.'),
-                const SizedBox(height: 16),
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: CupertinoButton(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.circular(8.0),
-                        // CORRIGIDO: Chamar onNavigateToTab para ir para a aba "Meu Jardim" (índice 1)
-                        onPressed: () => onNavigateToTab(1),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('Ver Jardim', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 15)),
-                            SizedBox(width: 6),
-                            Icon(CupertinoIcons.arrow_right, color: Colors.white, size: 18),
-                          ],
+                Text(
+                  '${appProvider.getGreeting()}, ${appProvider.getDisplayName()}!',
+                  style: textTheme.titleMedium,
+                ),
+                Text(
+                  'Dashboard',
+                  style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            automaticallyImplyLeading: false,
+          ),
+          body: RefreshIndicator(
+            onRefresh: () async {
+              await plantProvider.loadPlants();
+            },
+            child: ListView(
+              padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
+              children: <Widget>[
+                // Resumo do Jardim
+                _buildSectionContainer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(CupertinoIcons.chart_bar_alt_fill, 
+                               color: Theme.of(context).primaryColor, size: 24),
+                          const SizedBox(width: 8),
+                          Text('Resumo do Jardim', style: textTheme.titleLarge),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              '${stats['total']}',
+                              'Plantas',
+                              CupertinoIcons.tree,
+                              Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              '${stats['needingCare']}',
+                              'Precisam de Cuidado',
+                              CupertinoIcons.exclamationmark_triangle,
+                              Colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              '${stats['withReminders']}',
+                              'Com Lembretes',
+                              CupertinoIcons.bell,
+                              Colors.blue,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              '0',
+                              'Tarefas Hoje',
+                              CupertinoIcons.calendar,
+                              Colors.purple,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => onNavigateToTab(1),
+                          icon: const Icon(CupertinoIcons.tree),
+                          label: const Text('Ver Meu Jardim'),
                         ),
                       ),
-                )
+                    ],
+                  ),
+                ),
+                
+                // Ações Rápidas
+                _buildSectionContainer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(CupertinoIcons.bolt_fill, 
+                               color: Theme.of(context).primaryColor, size: 24),
+                          const SizedBox(width: 8),
+                          Text('Ações Rápidas', style: textTheme.titleLarge),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildActionCard(
+                              context,
+                              'Identificar Planta',
+                              'Descubra plantas com uma foto',
+                              CupertinoIcons.camera_viewfinder,
+                              () => onNavigateToTab(2),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildActionCard(
+                              context,
+                              'Comunidade',
+                              'Compartilhe e aprenda',
+                              CupertinoIcons.group,
+                              () => onNavigateToTab(3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Destaques & Dicas
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 8.0),
+                  child: Row(
+                    children: [
+                      Icon(CupertinoIcons.star_fill, 
+                           color: Theme.of(context).primaryColor, size: 24),
+                      const SizedBox(width: 8),
+                      Text('Destaques & Dicas', style: textTheme.titleLarge),
+                    ],
+                  ),
+                ),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _mockArticles.length,
+                  itemBuilder: (context, index) {
+                    final article = _mockArticles[index];
+                    return _buildHighlightCard(
+                      context: context,
+                      article: article,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/article_details', arguments: article);
+                      },
+                    );
+                  },
+                  separatorBuilder: (context, index) => Divider(
+                    indent: 20, 
+                    endIndent: 20, 
+                    color: Theme.of(context).dividerTheme.color, 
+                    height: 1
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
-          _buildSectionContainer(
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(vertical: 8),
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(CupertinoIcons.camera_viewfinder, color: Theme.of(context).primaryColor, size: 28),
-              ),
-              title: Text('Identificar Nova Planta', style: textTheme.titleMedium),
-              subtitle: Text('Descubra plantas com uma foto.', style: textTheme.bodySmall),
-              trailing: Icon(CupertinoIcons.right_chevron, color: Colors.grey[400], size: 20),
-              // CORRIGIDO: Chamar onNavigateToTab para ir para a aba "Identificar" (índice 2)
-              onTap: () => onNavigateToTab(2),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCard(BuildContext context, String value, String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20.0, 24.0, 20.0, 8.0),
-            child: Text('Destaques & Dicas', style: textTheme.titleLarge),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: color,
+            ),
+            textAlign: TextAlign.center,
           ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _mockArticles.length,
-            itemBuilder: (context, index) {
-              final article = _mockArticles[index];
-              return _buildHighlightCard(
-                context: context,
-                article: article,
-                onTap: () {
-                  Navigator.pushNamed(context, '/article_details', arguments: article);
-                },
-              );
-            },
-            separatorBuilder: (context, index) => Divider(indent: 20, endIndent: 20, color: Theme.of(context).dividerTheme.color, height: 1),
-          ),
-          const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.1)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Theme.of(context).primaryColor, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -137,7 +307,14 @@ class DashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: Colors.grey[200]!, width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: child,
     );

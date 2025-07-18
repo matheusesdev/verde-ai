@@ -20,6 +20,23 @@ dependencies:
 
   cupertino_icons: ^1.0.2
 
+  # Gerenciamento de Estado
+  provider: ^6.1.1
+  
+  # Persistência de Dados
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # Utilitários
+  uuid: ^4.2.1
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+  
+  # Animações
+  lottie: ^2.7.0
+  animations: ^2.0.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,6 +1,8 @@
 // lib/screens/main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'; // Para CupertinoIcons se você os usar na BottomNav
+import 'package:provider/provider.dart';
+import '../providers/plant_provider.dart';
 import 'dashboard_screen.dart';
 import 'my_garden_screen.dart';
 import 'identify_diagnose_screen.dart';
@@ -16,7 +18,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final List<Plant> _myPlantsList = []; // Lista centralizada de plantas do usuário
 
   // Função para mudar a aba programaticamente, passada para o DashboardScreen
   void _changeTab(int index) {
@@ -29,12 +30,11 @@ class _MainScreenState extends State<MainScreen> {
 
   // Callback para adicionar planta (vindo de IdentifyDiagnoseScreen) e navegar para detalhes
   void _addPlantToGardenAndNavigate(Plant plant, BuildContext passedContext) {
-    bool plantExists = _myPlantsList.any((p) => p.id == plant.id);
+    final plantProvider = Provider.of<PlantProvider>(context, listen: false);
+    final existingPlant = plantProvider.getPlantById(plant.id);
 
-    if (!plantExists) {
-      setState(() {
-        _myPlantsList.add(plant);
-      });
+    if (existingPlant == null) {
+      plantProvider.addPlant(plant);
       if (mounted && passedContext.mounted) { // Verificar se os contextos ainda são válidos
         ScaffoldMessenger.of(passedContext).showSnackBar(
           SnackBar(content: Text('${plant.name} adicionada ao seu jardim!')),
@@ -61,15 +61,8 @@ class _MainScreenState extends State<MainScreen> {
 
   // Callback para atualizar uma planta na lista (vindo de PlantDetailsScreen)
   void _updatePlantInGarden(Plant updatedPlant) {
-    setState(() {
-      final index = _myPlantsList.indexWhere((p) => p.id == updatedPlant.id);
-      if (index != -1) {
-        _myPlantsList[index] = updatedPlant;
-      } else {
-        // Opcional: Adicionar se não encontrar (embora update sugira que já existe)
-        // _myPlantsList.add(updatedPlant);
-      }
-    });
+    final plantProvider = Provider.of<PlantProvider>(context, listen: false);
+    plantProvider.updatePlant(updatedPlant);
   }
 
   late final List<Widget> _widgetOptions;
@@ -78,9 +71,8 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
      _widgetOptions = <Widget>[
-      DashboardScreen(myPlants: _myPlantsList, onNavigateToTab: _changeTab), // Passa a função _changeTab
+      DashboardScreen(onNavigateToTab: _changeTab), // Passa a função _changeTab
       MyGardenScreen(
-        myPlants: _myPlantsList,
         addPlantCallback: _addPlantToGardenAndNavigate, // Este callback não é mais usado diretamente por MyGardenScreen
         updatePlantCallback: _updatePlantInGarden,
       ),
@@ -99,9 +91,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack( // Usar IndexedStack para preservar o estado das abas
-        index: _selectedIndex,
-        children: _widgetOptions,
+      body: DefaultTabController(
+        length: _widgetOptions.length,
+        child: IndexedStack( // Usar IndexedStack para preservar o estado das abas
+          index: _selectedIndex,
+          children: _widgetOptions,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
